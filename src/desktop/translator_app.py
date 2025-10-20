@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QTextEdit, QPushButton, QLabel, QCheckBox, QSplitter,
-    QStatusBar, QMessageBox, QGroupBox
+    QStatusBar, QMessageBox, QGroupBox, QComboBox
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QIcon, QTextCursor
@@ -42,9 +42,16 @@ class TranslationWorker(QThread):
             # Auto-detect language if enabled
             if self.auto_detect:
                 detected_lang = self.detect_language(self.text)
+                # Default target language is English for all Asian languages
+                # Korean ↔ English (bidirectional)
+                # Japanese → English
+                # Chinese → English
+                # English → Korean (default)
                 if detected_lang == 'ko':
                     self.src_lang, self.tgt_lang = 'ko', 'en'
-                else:
+                elif detected_lang in ['ja', 'zh']:
+                    self.src_lang, self.tgt_lang = detected_lang, 'en'
+                else:  # English or other
                     self.src_lang, self.tgt_lang = 'en', 'ko'
 
             # Perform translation
@@ -62,19 +69,56 @@ class TranslationWorker(QThread):
 
     @staticmethod
     def detect_language(text: str) -> str:
-        """Simple language detection"""
+        """
+        Enhanced language detection for Korean, Japanese, Chinese, and English
+        Returns: language code ('ko', 'ja', 'zh', or 'en')
+        """
+        if not text or not text.strip():
+            return 'en'
+
+        # Count characters for each language
         korean_chars = sum(1 for char in text if '\uac00' <= char <= '\ud7a3')
+
+        # Japanese: Hiragana, Katakana, and some Kanji
+        hiragana = sum(1 for char in text if '\u3040' <= char <= '\u309f')
+        katakana = sum(1 for char in text if '\u30a0' <= char <= '\u30ff')
+        japanese_chars = hiragana + katakana
+
+        # Chinese: CJK Unified Ideographs (common Chinese characters)
+        chinese_chars = sum(1 for char in text if '\u4e00' <= char <= '\u9fff')
+
+        # Total non-whitespace characters
         total_chars = len([char for char in text if char.strip()])
 
         if total_chars == 0:
             return 'en'
 
+        # Calculate ratios
         korean_ratio = korean_chars / total_chars
-        return 'ko' if korean_ratio > 0.3 else 'en'
+        japanese_ratio = japanese_chars / total_chars
+        chinese_ratio = chinese_chars / total_chars
+
+        # Determine language (threshold: 20%)
+        if korean_ratio > 0.2:
+            return 'ko'
+        elif japanese_ratio > 0.2:
+            return 'ja'
+        elif chinese_ratio > 0.2:
+            return 'zh'
+        else:
+            return 'en'
 
 
 class TranslatorApp(QMainWindow):
     """Main application window"""
+
+    # Available languages
+    LANGUAGES = {
+        'ko': '한국어 (Korean)',
+        'en': 'English',
+        'ja': '日本語 (Japanese)',
+        'zh': '中文 (Chinese)'
+    }
 
     def __init__(self):
         super().__init__()
@@ -90,6 +134,11 @@ class TranslatorApp(QMainWindow):
         """Initialize user interface"""
         self.setWindowTitle('로컬 번역기 (Local Translator)')
         self.setGeometry(100, 100, 1000, 700)
+
+        # Set window icon
+        icon_path = Path(__file__).parent.parent.parent / 'icons' / 'icon.png'
+        if icon_path.exists():
+            self.setWindowIcon(QIcon(str(icon_path)))
 
         # Central widget
         central_widget = QWidget()
@@ -131,9 +180,9 @@ class TranslatorApp(QMainWindow):
 
     def create_header(self):
         """Create header section"""
-        header = QLabel('🌐 로컬 번역기 - Korean ↔ English Translator')
+        header = QLabel('🌐 로컬 번역기 - Multilingual Translator\n한국어 ↔ English · 日本語 · 中文')
         header.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        header.setFont(QFont('Arial', 18, QFont.Weight.Bold))
+        header.setFont(QFont('Arial', 16, QFont.Weight.Bold))
         header.setStyleSheet("""
             QLabel {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
@@ -150,7 +199,7 @@ class TranslatorApp(QMainWindow):
         group = QGroupBox('원문 (Source)')
         layout = QVBoxLayout()
 
-        # Language label
+        # Language label (shown when auto-detect is on)
         self.source_lang_label = QLabel('Auto-detect')
         self.source_lang_label.setStyleSheet("""
             QLabel {
@@ -159,6 +208,53 @@ class TranslatorApp(QMainWindow):
                 padding: 5px 15px;
                 border-radius: 12px;
                 font-weight: bold;
+            }
+        """)
+
+        # Language selector (shown when auto-detect is off)
+        self.source_lang_combo = QComboBox()
+        for code, name in self.LANGUAGES.items():
+            self.source_lang_combo.addItem(name, code)
+        self.source_lang_combo.setCurrentText(self.LANGUAGES['en'])
+        self.source_lang_combo.currentIndexChanged.connect(self.on_source_lang_changed)
+        self.source_lang_combo.setVisible(False)
+        self.source_lang_combo.setStyleSheet("""
+            QComboBox {
+                background-color: #667eea;
+                color: white;
+                padding: 5px 15px;
+                border-radius: 12px;
+                font-weight: bold;
+                min-width: 150px;
+            }
+            QComboBox::drop-down {
+                border: none;
+            }
+            QComboBox::down-arrow {
+                image: none;
+                border: none;
+            }
+            QComboBox QAbstractItemView {
+                background-color: white;
+                color: #212529;
+                border: 1px solid #dee2e6;
+                selection-background-color: #667eea;
+                selection-color: white;
+                outline: none;
+            }
+            QComboBox QAbstractItemView::item {
+                background-color: white;
+                color: #212529;
+                padding: 5px;
+                min-height: 25px;
+            }
+            QComboBox QAbstractItemView::item:selected {
+                background-color: #667eea;
+                color: white;
+            }
+            QComboBox QAbstractItemView::item:hover {
+                background-color: #e8ebfd;
+                color: #212529;
             }
         """)
 
@@ -180,6 +276,7 @@ class TranslatorApp(QMainWindow):
         # Layout
         top_layout = QHBoxLayout()
         top_layout.addWidget(self.source_lang_label)
+        top_layout.addWidget(self.source_lang_combo)
         top_layout.addStretch()
         top_layout.addWidget(clear_btn)
 
@@ -195,7 +292,7 @@ class TranslatorApp(QMainWindow):
         group = QGroupBox('번역 (Translation)')
         layout = QVBoxLayout()
 
-        # Language label
+        # Language label (shown when auto-detect is on)
         self.target_lang_label = QLabel('-')
         self.target_lang_label.setStyleSheet("""
             QLabel {
@@ -204,6 +301,53 @@ class TranslatorApp(QMainWindow):
                 padding: 5px 15px;
                 border-radius: 12px;
                 font-weight: bold;
+            }
+        """)
+
+        # Language selector (shown when auto-detect is off)
+        self.target_lang_combo = QComboBox()
+        for code, name in self.LANGUAGES.items():
+            self.target_lang_combo.addItem(name, code)
+        self.target_lang_combo.setCurrentText(self.LANGUAGES['ko'])
+        self.target_lang_combo.currentIndexChanged.connect(self.on_target_lang_changed)
+        self.target_lang_combo.setVisible(False)
+        self.target_lang_combo.setStyleSheet("""
+            QComboBox {
+                background-color: #764ba2;
+                color: white;
+                padding: 5px 15px;
+                border-radius: 12px;
+                font-weight: bold;
+                min-width: 150px;
+            }
+            QComboBox::drop-down {
+                border: none;
+            }
+            QComboBox::down-arrow {
+                image: none;
+                border: none;
+            }
+            QComboBox QAbstractItemView {
+                background-color: white;
+                color: #212529;
+                border: 1px solid #dee2e6;
+                selection-background-color: #764ba2;
+                selection-color: white;
+                outline: none;
+            }
+            QComboBox QAbstractItemView::item {
+                background-color: white;
+                color: #212529;
+                padding: 5px;
+                min-height: 25px;
+            }
+            QComboBox QAbstractItemView::item:selected {
+                background-color: #764ba2;
+                color: white;
+            }
+            QComboBox QAbstractItemView::item:hover {
+                background-color: #e8ebfd;
+                color: #212529;
             }
         """)
 
@@ -221,6 +365,7 @@ class TranslatorApp(QMainWindow):
         # Layout
         top_layout = QHBoxLayout()
         top_layout.addWidget(self.target_lang_label)
+        top_layout.addWidget(self.target_lang_combo)
         top_layout.addStretch()
         top_layout.addWidget(copy_btn)
 
@@ -239,6 +384,7 @@ class TranslatorApp(QMainWindow):
         self.auto_detect_cb = QCheckBox('언어 자동 감지 (Auto-detect language)')
         self.auto_detect_cb.setChecked(True)
         self.auto_detect_cb.setFont(QFont('Arial', 10))
+        self.auto_detect_cb.stateChanged.connect(self.on_auto_detect_changed)
 
         # Swap button
         swap_btn = QPushButton('⇄ Swap')
@@ -278,6 +424,9 @@ class TranslatorApp(QMainWindow):
             QMainWindow {
                 background-color: #f5f7fa;
             }
+            QWidget {
+                color: #212529;
+            }
             QGroupBox {
                 font-weight: bold;
                 border: 2px solid #dee2e6;
@@ -285,20 +434,29 @@ class TranslatorApp(QMainWindow):
                 margin-top: 10px;
                 padding-top: 10px;
                 background-color: white;
+                color: #212529;
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
                 left: 10px;
                 padding: 0 5px;
+                color: #495057;
+            }
+            QLabel {
+                color: #212529;
             }
             QTextEdit {
                 border: 2px solid #dee2e6;
                 border-radius: 8px;
                 padding: 8px;
                 background-color: white;
+                color: #212529;
             }
             QTextEdit:focus {
                 border-color: #667eea;
+            }
+            QCheckBox {
+                color: #212529;
             }
             QPushButton {
                 background-color: #6c757d;
@@ -310,6 +468,21 @@ class TranslatorApp(QMainWindow):
             }
             QPushButton:hover {
                 background-color: #5a6268;
+            }
+            QMessageBox {
+                background-color: white;
+            }
+            QMessageBox QLabel {
+                color: #212529;
+                background-color: white;
+            }
+            QMessageBox QPushButton {
+                min-width: 80px;
+                background-color: #667eea;
+                color: white;
+            }
+            QMessageBox QPushButton:hover {
+                background-color: #5568d3;
             }
         """)
 
@@ -328,18 +501,18 @@ class TranslatorApp(QMainWindow):
         except Exception as e:
             logger.error(f"Failed to initialize translator: {e}")
             self.status_bar.showMessage(f'Error: {e}')
-            QMessageBox.critical(self, 'Error', f'Failed to load translator:\n{e}')
+            self._show_message_box('Error', f'Failed to load translator:\n{e}', QMessageBox.Icon.Critical)
 
     def translate(self):
         """Perform translation"""
         text = self.source_text.toPlainText().strip()
 
         if not text:
-            QMessageBox.warning(self, 'Warning', 'Please enter text to translate.')
+            self._show_message_box('Warning', 'Please enter text to translate.', QMessageBox.Icon.Warning)
             return
 
         if not self.translator:
-            QMessageBox.warning(self, 'Warning', 'Translator is not ready yet.')
+            self._show_message_box('Warning', 'Translator is not ready yet.', QMessageBox.Icon.Warning)
             return
 
         # Disable button and show progress
@@ -363,9 +536,17 @@ class TranslatorApp(QMainWindow):
         """Handle translation completion"""
         self.target_text.setPlainText(translation)
 
+        # Language names mapping
+        lang_names = {
+            'ko': '한국어 (Korean)',
+            'en': 'English',
+            'ja': '日本語 (Japanese)',
+            'zh': '中文 (Chinese)'
+        }
+
         # Update language labels
-        src_name = '한국어 (Korean)' if src_lang == 'ko' else 'English'
-        tgt_name = '한국어 (Korean)' if tgt_lang == 'ko' else 'English'
+        src_name = lang_names.get(src_lang, src_lang.upper())
+        tgt_name = lang_names.get(tgt_lang, tgt_lang.upper())
 
         self.source_lang_label.setText(src_name)
         self.target_lang_label.setText(tgt_name)
@@ -381,7 +562,7 @@ class TranslatorApp(QMainWindow):
 
     def on_translation_error(self, error_msg):
         """Handle translation error"""
-        QMessageBox.critical(self, 'Translation Error', f'Translation failed:\n{error_msg}')
+        self._show_message_box('Translation Error', f'Translation failed:\n{error_msg}', QMessageBox.Icon.Critical)
         self.translate_btn.setEnabled(True)
         self.translate_btn.setText('번역하기 (Translate)')
         self.status_bar.showMessage('Translation failed')
@@ -401,7 +582,7 @@ class TranslatorApp(QMainWindow):
             clipboard.setText(text)
             self.status_bar.showMessage('Translation copied to clipboard! 복사 완료', 2000)
         else:
-            QMessageBox.information(self, 'Info', 'No translation to copy.')
+            self._show_message_box('Info', 'No translation to copy.', QMessageBox.Icon.Information)
 
     def swap_text(self):
         """Swap source and target text"""
@@ -419,15 +600,132 @@ class TranslatorApp(QMainWindow):
         count = len(self.source_text.toPlainText())
         self.char_count_label.setText(f'{count} characters')
 
+    def on_auto_detect_changed(self, state):
+        """Handle auto-detect checkbox state change"""
+        is_checked = (state == Qt.CheckState.Checked)
+
+        # Toggle visibility of labels vs combo boxes
+        self.source_lang_label.setVisible(is_checked)
+        self.source_lang_combo.setVisible(not is_checked)
+        self.target_lang_label.setVisible(is_checked)
+        self.target_lang_combo.setVisible(not is_checked)
+
+        if is_checked:
+            # Reset to auto-detect mode
+            self.source_lang_label.setText('Auto-detect')
+            self.target_lang_label.setText('-')
+        else:
+            # Set to manual mode with current selections
+            src_code = self.source_lang_combo.currentData()
+            tgt_code = self.target_lang_combo.currentData()
+            self.current_src_lang = src_code
+            self.current_tgt_lang = tgt_code
+            logger.info(f"Manual mode: {src_code} -> {tgt_code}")
+
+    def on_source_lang_changed(self, index):
+        """Handle source language selection change"""
+        src_code = self.source_lang_combo.currentData()
+        tgt_code = self.target_lang_combo.currentData()
+
+        # Prevent same language selection
+        if src_code == tgt_code:
+            # Find a different target language
+            for code in self.LANGUAGES.keys():
+                if code != src_code:
+                    # Set target to a different language
+                    idx = self.target_lang_combo.findData(code)
+                    self.target_lang_combo.setCurrentIndex(idx)
+                    tgt_code = code
+                    break
+
+        self.current_src_lang = src_code
+        self.current_tgt_lang = tgt_code
+
+    def on_target_lang_changed(self, index):
+        """Handle target language selection change"""
+        src_code = self.source_lang_combo.currentData()
+        tgt_code = self.target_lang_combo.currentData()
+
+        # Prevent same language selection
+        if src_code == tgt_code:
+            # Find a different source language
+            for code in self.LANGUAGES.keys():
+                if code != tgt_code:
+                    # Set source to a different language
+                    idx = self.source_lang_combo.findData(code)
+                    self.source_lang_combo.setCurrentIndex(idx)
+                    src_code = code
+                    break
+
+        self.current_src_lang = src_code
+        self.current_tgt_lang = tgt_code
+
+    def _show_message_box(self, title, message, icon):
+        """Helper method to show styled message box"""
+        msg_box = QMessageBox(self)
+        msg_box.setIcon(icon)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(message)
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+
+        # Force style for dialog
+        msg_box.setStyleSheet("""
+            QMessageBox {
+                background-color: white;
+            }
+            QMessageBox QLabel {
+                color: #212529;
+                font-size: 13px;
+            }
+            QMessageBox QPushButton {
+                min-width: 80px;
+                min-height: 24px;
+                background-color: #667eea;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 5px 15px;
+            }
+            QMessageBox QPushButton:hover {
+                background-color: #5568d3;
+            }
+        """)
+
+        msg_box.exec()
+
     def closeEvent(self, event):
         """Handle window close event"""
-        reply = QMessageBox.question(
-            self,
-            'Exit',
-            'Are you sure you want to exit?',
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No
-        )
+        msg_box = QMessageBox(self)
+        msg_box.setIcon(QMessageBox.Icon.Question)
+        msg_box.setWindowTitle('Exit')
+        msg_box.setText('Are you sure you want to exit?')
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg_box.setDefaultButton(QMessageBox.StandardButton.No)
+
+        # Force style for dialog
+        msg_box.setStyleSheet("""
+            QMessageBox {
+                background-color: white;
+            }
+            QMessageBox QLabel {
+                color: #212529;
+                font-size: 13px;
+            }
+            QMessageBox QPushButton {
+                min-width: 80px;
+                min-height: 24px;
+                background-color: #667eea;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 5px 15px;
+            }
+            QMessageBox QPushButton:hover {
+                background-color: #5568d3;
+            }
+        """)
+
+        reply = msg_box.exec()
 
         if reply == QMessageBox.StandardButton.Yes:
             event.accept()

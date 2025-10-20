@@ -46,3 +46,6 @@ Thumbs.db
 # Test outputs
 test_output/
 *_translated.txt
+*.dmg
+build/
+dist/
