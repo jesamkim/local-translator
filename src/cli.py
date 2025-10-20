@@ -89,7 +89,9 @@ def interactive_mode(translator: Translator):
             # Clear "번역 중..." message and display result
             print("\r" + " " * 80 + "\r", end='')  # Clear line
             print(f"[감지된 언어 방향: {direction}]")
-            print(f"번역 결과 (Translation): {result}")
+            print()
+            print(result)
+            print()
             print("-" * 60)
             print()
 
