@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로컬 번역기 - Local Translator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌐 로컬 번역기</h1>
+            <p class="subtitle">Korean ↔ English Translator</p>
+        </header>
+
+        <main>
+            <div class="translation-box">
+                <!-- Source Section -->
+                <div class="input-section">
+                    <div class="section-header">
+                        <h2>원문 (Source)</h2>
+                        <button id="clearBtn" class="btn-secondary" title="Clear text">
+                            Clear
+                        </button>
+                    </div>
+                    <textarea
+                        id="sourceText"
+                        placeholder="번역할 텍스트를 입력하세요...&#10;Enter text to translate..."
+                        rows="10"
+                    ></textarea>
+                    <div class="language-info">
+                        <span id="sourceLang" class="lang-badge">Auto-detect</span>
+                        <span class="char-count">
+                            <span id="charCount">0</span> characters
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Arrow -->
+                <div class="arrow-section">
+                    <button id="swapBtn" class="swap-btn" title="Swap languages">
+                        ⇄
+                    </button>
+                </div>
+
+                <!-- Target Section -->
+                <div class="output-section">
+                    <div class="section-header">
+                        <h2>번역 (Translation)</h2>
+                        <button id="copyBtn" class="btn-secondary" title="Copy translation">
+                            Copy
+                        </button>
+                    </div>
+                    <textarea
+                        id="targetText"
+                        placeholder="번역 결과가 여기에 표시됩니다...&#10;Translation will appear here..."
+                        rows="10"
+                        readonly
+                    ></textarea>
+                    <div class="language-info">
+                        <span id="targetLang" class="lang-badge">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Section -->
+            <div class="control-section">
+                <button id="translateBtn" class="btn-primary">
+                    <span class="btn-text">번역하기 (Translate)</span>
+                    <span class="btn-loading" style="display: none;">
+                        <span class="spinner"></span> Translating...
+                    </span>
+                </button>
+                <div class="options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="autoDetect" checked>
+                        <span>언어 자동 감지 (Auto-detect)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Status Message -->
+            <div id="statusMessage" class="status-message"></div>
+        </main>
+
+        <footer>
+            <p>
+                Powered by <strong>NLLB-200-distilled-600M</strong> model<br>
+                Running locally on your server
+            </p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

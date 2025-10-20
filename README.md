@@ -8,11 +8,13 @@ A local Korean-English translator powered by HuggingFace's NLLB-200-distilled-60
 
 - ✅ 한글 ↔ 영어 양방향 번역
 - ✅ 언어 자동 감지
-- ✅ CLI 인터페이스 지원
+- ✅ **3가지 인터페이스 지원**
+  - CLI (Command Line Interface)
+  - 웹 UI (Flask 기반)
+  - 데스크톱 앱 (PyQt6, macOS/Windows/Linux)
 - ✅ 파일 번역 지원
 - ✅ 대화형 모드
 - ✅ GPU 가속 지원
-- 🔜 Streamlit UI (개발 예정)
 
 ## 설치 (Installation)
 
@@ -39,7 +41,87 @@ The model will be automatically downloaded on first run (~2.5GB).
 
 ## 사용법 (Usage)
 
-### Alias 설정 (권장)
+### 데스크톱 앱 사용 (Desktop App) 🖥️
+
+가장 사용하기 쉬운 방법입니다. 그래픽 인터페이스로 번역할 수 있습니다.
+
+```bash
+# 가상환경 활성화
+source venv/bin/activate
+
+# PyQt6 설치 (최초 1회)
+pip install PyQt6
+
+# 앱 실행
+python src/desktop/translator_app.py
+```
+
+#### 데스크톱 앱 기능
+
+- 현대적인 GUI 디자인
+- 실시간 번역
+- 언어 자동 감지
+- 번역 결과 복사
+- 원문/번역문 교환
+- 문자 수 카운트
+- 백그라운드 번역 (UI 반응성)
+
+#### macOS .app 번들로 만들기
+
+독립 실행 가능한 macOS 앱으로 패키징하려면 [BUILD_APP.md](BUILD_APP.md)를 참조하세요.
+
+### 웹 UI 사용 (Web UI) 🌐
+
+가장 사용하기 편한 방법입니다. 웹 브라우저에서 번역기를 사용할 수 있습니다.
+
+#### 서버 실행
+
+```bash
+# 가상환경 활성화
+source venv/bin/activate
+
+# Flask 웹 서버 실행
+python src/ui/app.py
+
+# 또는 포트와 호스트 지정
+python src/ui/app.py --host 0.0.0.0 --port 5000
+
+# GPU 사용 안 함
+python src/ui/app.py --no-gpu
+```
+
+#### SSH 환경에서 접속 (Remote Server)
+
+SSH로 원격 서버에 접속한 경우, 포트 포워딩을 사용하여 로컬 브라우저에서 접속:
+
+```bash
+# 로컬 터미널에서 (새 터미널 창)
+ssh -L 5000:localhost:5000 username@your-server-address
+
+# 그 다음 브라우저에서
+http://localhost:5000
+```
+
+#### 로컬 환경에서 접속
+
+서버가 실행되면 브라우저에서 접속:
+
+```
+http://localhost:5000
+```
+
+#### 웹 UI 기능
+
+- 실시간 번역
+- 언어 자동 감지
+- 번역 결과 복사
+- 원문/번역문 교환
+- 반응형 디자인 (모바일 지원)
+- 깔끔하고 직관적인 인터페이스
+
+### CLI 사용법
+
+#### Alias 설정 (권장)
 
 어디서나 `trans` 명령어로 번역기를 사용할 수 있도록 설정:
 
@@ -145,11 +227,22 @@ local-translator/
 ├── src/
 │   ├── translator/
 │   │   ├── __init__.py
-│   │   └── core.py          # 핵심 번역 모듈
-│   ├── ui/                   # Streamlit UI (개발 예정)
+│   │   └── core.py           # 핵심 번역 모듈
+│   ├── desktop/
+│   │   └── translator_app.py # PyQt6 데스크톱 앱
+│   ├── ui/
+│   │   ├── app.py            # Flask 웹 서버
+│   │   ├── templates/
+│   │   │   └── index.html    # 웹 UI HTML
+│   │   └── static/
+│   │       ├── css/
+│   │       │   └── style.css # 스타일시트
+│   │       └── js/
+│   │           └── app.js    # JavaScript 로직
 │   └── cli.py                # CLI 인터페이스
 ├── tests/                    # 테스트 코드
 ├── requirements.txt          # 의존성 목록
+├── BUILD_APP.md              # macOS 앱 빌드 가이드
 └── README.md
 ```
 
@@ -237,8 +330,12 @@ MIT License - 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
 
 ## 향후 계획 (Roadmap)
 
-- [ ] Streamlit 기반 웹 UI 추가
-- [ ] 다국어 지원 확장
+- [x] Flask 기반 웹 UI 추가
+- [x] PyQt6 기반 데스크톱 앱
+- [ ] macOS .dmg 배포 파일 제작
+- [ ] Windows .exe 빌드
+- [ ] 다국어 지원 확장 (일본어, 중국어 등)
 - [ ] 번역 품질 개선 옵션
 - [ ] 번역 히스토리 저장 기능
-- [ ] API 서버 모드 추가
+- [ ] REST API 서버 모드 추가
+- [ ] 번역 결과 즐겨찾기 기능
