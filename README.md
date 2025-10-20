@@ -364,5 +364,22 @@ trans --no-gpu
 
 ## 라이선스 (License)
 
+### 프로젝트 코드 (Project Code)
+
 MIT License - 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+
+### 모델 라이선스 (Model License) ⚠️
+
+이 프로젝트는 Meta의 **NLLB-200-distilled-600M** 모델을 사용하며, 해당 모델은 **CC-BY-NC 4.0 (Creative Commons Attribution-NonCommercial 4.0)** 라이센스를 따릅니다.
+
+**중요 제약사항**:
+- ❌ **상업적 사용 불가**: 매출 발생, 유료 서비스, 비즈니스 운영에 사용할 수 없습니다
+- ❌ **기업 상업 배포 제한**: 상업 목적의 온프레미스 배포가 제한됩니다
+- ✅ **허용되는 용도**: 연구, 교육, 개인 프로젝트, 비영리 활동
+
+**상업적 사용이 필요한 경우**:
+- Meta와 별도의 상업 라이센스 협의 필요
+- 또는 Apache 2.0 등 허용적 라이센스의 대안 모델 고려 (예: OPUS-MT, MADLAD-400)
+
+자세한 내용: [NLLB Model Card - CC-BY-NC 4.0](https://huggingface.co/facebook/nllb-200-distilled-600M)
 
