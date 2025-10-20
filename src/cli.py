@@ -46,6 +46,10 @@ def interactive_mode(translator: Translator):
     Args:
         translator: Translator instance
     """
+    # Set logging to WARNING level for cleaner output in interactive mode
+    logging.getLogger('src.translator.core').setLevel(logging.WARNING)
+    logging.getLogger('transformers').setLevel(logging.ERROR)
+
     print_header()
     print("대화형 모드 (Interactive Mode)")
     print("종료하려면 'quit', 'exit', 또는 'q'를 입력하세요.")
@@ -76,12 +80,15 @@ def interactive_mode(translator: Translator):
                 src_lang, tgt_lang = 'en', 'ko'
                 direction = "영어 → 한글"
 
-            print(f"\n[감지된 언어 방향: {direction}]")
+            print(f"\n[감지된 언어 방향: {direction}]", end='', flush=True)
+            print(" 번역 중...", end='', flush=True)
 
             # Translate
             result = translator.translate(text, src_lang=src_lang, tgt_lang=tgt_lang)
 
-            # Display result
+            # Clear "번역 중..." message and display result
+            print("\r" + " " * 80 + "\r", end='')  # Clear line
+            print(f"[감지된 언어 방향: {direction}]")
             print(f"번역 결과 (Translation): {result}")
             print("-" * 60)
             print()
@@ -251,12 +258,23 @@ def main():
 
     args = parser.parse_args()
 
+    # Determine if we're in interactive mode (no args provided)
+    is_interactive = not args.text and not args.file
+
     # Initialize translator
     try:
-        logger.info("번역기 초기화 중... (Initializing translator...)")
+        if not is_interactive:
+            logger.info("번역기 초기화 중... (Initializing translator...)")
+        else:
+            print("번역기 초기화 중... (Initializing translator...)")
+
         translator = Translator(use_gpu=not args.no_gpu)
-        logger.info("번역기 준비 완료! (Translator ready!)")
-        print()
+
+        if not is_interactive:
+            logger.info("번역기 준비 완료! (Translator ready!)")
+            print()
+        else:
+            print("번역기 준비 완료! (Translator ready!)\n")
     except Exception as e:
         logger.error(f"번역기 초기화 실패 (Failed to initialize translator): {e}")
         sys.exit(1)
