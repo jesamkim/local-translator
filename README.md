@@ -30,12 +30,21 @@ A local multilingual translator powered by HuggingFace's NLLB-200-distilled-600M
 
 ### 방법 1: DMG 파일 사용 (macOS - 가장 쉬운 방법) 🎯
 
-배포된 DMG 파일을 다운로드하여 설치:
+#### 다운로드
 
-1. `Local-Translator-1.0.0.dmg` 다운로드
-2. DMG 파일 더블클릭
-3. `Local Translator.app`을 **Applications** 폴더로 드래그
-4. Applications에서 앱 실행
+**GitHub Release에서 다운로드** (권장):
+
+1. [Releases 페이지](https://github.com/jesamkim/local-translator/releases) 방문
+2. 최신 릴리스에서 `Local-Translator-1.0.0.dmg` 다운로드
+3. 아래 설치 단계 진행
+
+또는 직접 링크: [최신 버전 다운로드](https://github.com/jesamkim/local-translator/releases/latest)
+
+#### 설치
+
+1. 다운로드한 `Local-Translator-1.0.0.dmg` 더블클릭
+2. `Local Translator.app`을 **Applications** 폴더로 드래그
+3. Applications에서 앱 실행
 
 **장점**: Python 설치 불필요, 모든 의존성 포함
 
