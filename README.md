@@ -8,27 +8,27 @@ A local multilingual translator powered by HuggingFace's NLLB-200-distilled-600M
 
 ## 주요 기능 (Features)
 
-- ✅ **다국어 번역 지원**
+- **다국어 번역 지원**
   - 한국어 ↔ 영어 (양방향)
   - 일본어 → 영어
   - 중국어 → 영어
-- ✅ **언어 감지 및 선택**
+- **언어 감지 및 선택**
   - 자동 언어 감지
   - 수동 언어 선택 (드롭다운)
-- ✅ **2가지 인터페이스 지원**
+- **2가지 인터페이스 지원**
   - CLI (Command Line Interface)
-  - 데스크톱 앱 (PyQt6, macOS/Windows/Linux)
-- ✅ **macOS 배포**
+  - GUI 앱 (PyQt6, macOS/Windows/Linux)
+- **macOS 배포**
   - 독립 실행 가능한 .app 번들
   - DMG 설치 파일 생성
   - 커스텀 앱 아이콘
-- ✅ 파일 번역 지원
-- ✅ 대화형 모드
-- ✅ GPU 가속 지원
+- 파일 번역 지원
+- 대화형 모드
+- GPU 가속 지원
 
 ## 설치 (Installation)
 
-### 방법 1: DMG 파일 사용 (macOS - 가장 쉬운 방법) 🎯
+### 방법 1: DMG 파일 사용 (macOS - 가장 쉬운 방법)
 
 #### 다운로드
 
@@ -73,7 +73,7 @@ The model will be automatically downloaded on first run (~2.5GB).
 
 ## 사용법 (Usage)
 
-### 데스크톱 앱 사용 (Desktop App) 🖥️
+### GUI 앱 사용 (PyQt6 - macOS/Windows/Linux)
 
 가장 사용하기 쉬운 방법입니다. 그래픽 인터페이스로 번역할 수 있습니다.
 
@@ -88,19 +88,19 @@ pip install PyQt6
 python src/desktop/translator_app.py
 ```
 
-#### 데스크톱 앱 기능
+#### GUI 앱 주요 기능
 
-- 🎨 현대적인 GUI 디자인
-- 🌐 **다국어 번역 지원** (한국어, 영어, 일본어, 중국어)
-- 🔄 **언어 선택 모드**
+- 현대적인 GUI 디자인
+- **다국어 번역 지원** (한국어, 영어, 일본어, 중국어)
+- **언어 선택 모드**
   - 자동 감지 모드 (체크박스 ON)
   - 수동 선택 모드 (체크박스 OFF - 드롭다운으로 언어 선택)
-- ⚡ 실시간 번역
-- 📋 번역 결과 복사
-- 🔄 원문/번역문 교환
-- 🔢 문자 수 카운트
-- 🎯 백그라운드 번역 (UI 반응성)
-- 🎨 커스텀 앱 아이콘 ("KO ⇄ EN")
+- 실시간 번역
+- 번역 결과 복사
+- 원문/번역문 교환
+- 문자 수 카운트
+- 백그라운드 번역 (UI 반응성)
+- 커스텀 앱 아이콘 ("KO ⇄ EN")
 
 #### macOS .app 번들 및 DMG 배포 파일 만들기
 
@@ -232,7 +232,7 @@ local-translator/
 │   │   ├── __init__.py
 │   │   └── core.py           # 핵심 번역 모듈 (다국어 지원)
 │   ├── desktop/
-│   │   └── translator_app.py # PyQt6 데스크톱 앱
+│   │   └── translator_app.py # PyQt6 GUI 앱
 │   └── cli.py                # CLI 인터페이스
 ├── icons/
 │   ├── icon.png              # 앱 아이콘 (512x512)
@@ -248,7 +248,7 @@ local-translator/
 
 ## 예제 (Examples)
 
-### 예제 1: 데스크톱 앱 사용
+### 예제 1: GUI 앱 사용
 
 1. **자동 감지 모드** (기본):
    - 체크박스 ☑️ "언어 자동 감지" 활성화
@@ -339,7 +339,7 @@ GPU 메모리가 부족한 경우:
 trans --no-gpu
 ```
 
-또는 데스크톱 앱은 기본적으로 CPU 모드로 동작합니다.
+또는 GUI 앱은 기본적으로 CPU 모드로 동작합니다.
 
 ### 모델 다운로드 실패
 
@@ -359,7 +359,7 @@ trans --no-gpu
 - 🇯🇵 일본어 (Japanese) - 영어로 번역
 - 🇨🇳 중국어 (Chinese) - 영어로 번역
 
-**데스크톱 앱에서는 드롭다운 메뉴를 통해 언어를 직접 선택할 수 있습니다.**
+**GUI 앱에서는 드롭다운 메뉴를 통해 언어를 직접 선택할 수 있습니다.**
 
 
 ## 라이선스 (License)
