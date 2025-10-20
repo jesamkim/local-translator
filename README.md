@@ -39,12 +39,43 @@ The model will be automatically downloaded on first run (~2.5GB).
 
 ## 사용법 (Usage)
 
+### Alias 설정 (권장)
+
+어디서나 `trans` 명령어로 번역기를 사용할 수 있도록 설정:
+
+```bash
+# ~/.bashrc 또는 ~/.zshrc 파일에 추가
+trans() {
+    local TRANS_DIR="/Workshop/local-translator"
+    (cd "$TRANS_DIR" && source venv/bin/activate && python -m src.cli "$@")
+}
+
+# 설정 적용
+source ~/.bashrc  # 또는 source ~/.zshrc
+```
+
+이제 어디서든 사용 가능합니다:
+
+```bash
+# 대화형 모드
+trans
+
+# 직접 번역
+trans -t "Hello, World!"
+trans -t "안녕하세요"
+
+# 파일 번역
+trans -f input.txt -o output.txt
+```
+
 ### 대화형 모드 (Interactive Mode)
 
 가장 간단한 사용 방법입니다:
 
 ```bash
 python -m src.cli
+# 또는 alias 설정 후
+trans
 ```
 
 대화형 모드에서는:
@@ -55,36 +86,38 @@ python -m src.cli
 
 ```bash
 # 영어 → 한글
+trans -t "Hello, World!"
+# 또는
 python -m src.cli -t "Hello, World!"
 
 # 한글 → 영어
-python -m src.cli -t "안녕하세요, 세계!"
+trans -t "안녕하세요, 세계!"
 
 # 언어 명시
-python -m src.cli -t "Hello" -s en -d ko --no-auto-detect
+trans -t "Hello" -s en -d ko --no-auto-detect
 ```
 
 ### 파일 번역 (File Translation)
 
 ```bash
 # 입력 파일 번역 (출력 파일 자동 생성)
-python -m src.cli -f input.txt
+trans -f input.txt
 
 # 출력 파일 지정
-python -m src.cli -f input.txt -o output.txt
+trans -f input.txt -o output.txt
 
 # 언어 명시하여 파일 번역
-python -m src.cli -f english.txt -o korean.txt -s en -d ko --no-auto-detect
+trans -f english.txt -o korean.txt -s en -d ko --no-auto-detect
 ```
 
 ### GPU 사용 설정 (GPU Configuration)
 
 ```bash
 # GPU 사용 (기본값)
-python -m src.cli
+trans
 
 # CPU만 사용
-python -m src.cli --no-gpu
+trans --no-gpu
 ```
 
 ## CLI 옵션 (CLI Options)
@@ -125,14 +158,14 @@ local-translator/
 ### 예제 1: 간단한 번역
 
 ```bash
-$ python -m src.cli -t "Hello, how are you?"
+$ trans -t "Hello, how are you?"
 안녕하세요, 어떻게 지내세요?
 ```
 
 ### 예제 2: 대화형 모드
 
 ```bash
-$ python -m src.cli
+$ trans
 ============================================================
    로컬 번역기 (Local Translator)
    한글 ↔ 영어 번역 (Korean ↔ English)
@@ -146,13 +179,17 @@ $ python -m src.cli
 번역할 텍스트 입력 (Enter text): Good morning!
 
 [감지된 언어 방향: 영어 → 한글]
-번역 결과 (Translation): 좋은 아침입니다!
+
+좋은 아침입니다!
+
 ------------------------------------------------------------
 
 번역할 텍스트 입력 (Enter text): 감사합니다
 
 [감지된 언어 방향: 한글 → 영어]
-번역 결과 (Translation): Thank you
+
+Thank you
+
 ------------------------------------------------------------
 ```
 
@@ -169,7 +206,7 @@ $ python -m src.cli
 
 GPU 메모리가 부족한 경우:
 ```bash
-python -m src.cli --no-gpu
+trans --no-gpu
 ```
 
 ### 모델 다운로드 실패
